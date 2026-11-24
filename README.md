@@ -72,7 +72,7 @@ test/                         Host unit tests (Unity)
 | Task | Priority | Purpose |
 |---|---|---|
 | TaskMonitor | Highest | Checks every registered task and kicks the watchdog |
-| HelloTask | 5 | Prints "Hello world!" every second, and the printf buffer high water mark every 10 seconds |
+| HelloTask | 5 | Prints "Hello world!" every second. Every 10 seconds it also prints the FreeRTOS task list and run-time stats, and the printf buffer high water mark |
 | DisplayTask | 3 | The only task that draws on the LCD: the title, and the CPU usage every 500 ms |
 | PrintfTask | 1 (lowest) | Sends buffered printf output to the console every 10 ms |
 
@@ -129,6 +129,15 @@ DisplayTask Initialized
 Hello world! 1
 Hello world! 2
 ...
+Hello world! 10
+
+TASK INFO**********************************************
+Name            State  Priority  Stack  Num
+...
+TASK STATS INFO****************************************
+Name            Abs Time (us)  % Time
+...
+Printf buffer high water mark: ...
 ```
 
 `sdkconfig.defaults` holds the settings the project relies on, so they survive `idf.py set-target` and deleting `sdkconfig`:

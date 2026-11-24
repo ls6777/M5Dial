@@ -8,8 +8,8 @@
 
 /// @brief Hello world task
 /// @details Prints a hello message once a second. The output goes into the printf buffer and is sent to the UART by
-///          the PrintfTask. Every 10 messages it also prints the printf buffer high water mark. (The LCD is drawn by
-///          DisplayTask.)
+///          the PrintfTask. Every 10 messages it also prints the FreeRTOS task list and run-time statistics, and the
+///          printf buffer high water mark. (The LCD is drawn by DisplayTask.)
 ///
 ///          Registers with the task monitor with a 5 second timeout and checks in when the monitor asks.
 class HelloTask
@@ -41,8 +41,11 @@ class HelloTask
         /// @brief Handle the initialize message: register with the task monitor
         void HandleInitialize();
 
-        /// @brief Print the hello message, and the printf buffer high water mark every 10 messages
+        /// @brief Print the hello message, and every 10 messages the task statistics and printf buffer high water mark
         void SayHello();
+
+        /// @brief Print the FreeRTOS task list (state, priority, stack high water mark) and run-time statistics
+        void PrintTaskStats();
 
         /// @brief Handle the shutdown message: print a message and stop processing
         void HandleShutdown();

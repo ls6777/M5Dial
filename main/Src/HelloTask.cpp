@@ -13,7 +13,14 @@ namespace
     constexpr uint32_t MSG_Q_LENGTH = 10;                   ///< Number of messages the queue can hold
     constexpr uint32_t HELLO_PERIOD = 1 * MS_PER_SEC;       ///< Period (ms) for printing the hello message
     constexpr uint32_t CHECKIN_TIMEOUT = 5 * MS_PER_SEC;    ///< Task monitor timeout (ms)
-    constexpr uint32_t STATS_EVERY = 10;                    ///< Print the high water mark every this many hellos
+    constexpr uint32_t STATS_EVERY = 10;                    ///< Print the statistics every this many hellos
+
+    /// @brief Size of the task statistics buffer, in bytes. TargetPort reserves 64 bytes per task, so this holds the
+    ///        tables for up to 16 tasks.
+    constexpr size_t TASK_STATS_SIZE = 1024;
+
+    /// @brief Holds one task statistics table at a time (static: too large for the task's stack)
+    char taskStatsBuf[TASK_STATS_SIZE];
 }
 
 QHandle HelloTask::msgQHandle = nullptr;
@@ -118,9 +125,27 @@ void HelloTask::SayHello()
 
     if ((count % STATS_EVERY) == 0)
     {
+        PrintTaskStats();
         printf("Printf buffer high water mark: %d of %d bytes\r\n", PrintUtils::GetHighWaterMark(),
                PrintUtils::BUFFER_SIZE - 1);
     }
+}
+
+//------------------------------------------------------------------
+// PrintTaskStats
+//------------------------------------------------------------------
+void HelloTask::PrintTaskStats()
+{
+    // printf copies the text into the printf buffer, so one buffer can hold each table in turn
+    TargetPort::GetTaskList(taskStatsBuf, sizeof(taskStatsBuf));
+    printf("\r\nTASK INFO**********************************************\r\n");
+    printf("Name            State  Priority  Stack  Num\r\n");
+    printf("%s\r\n", taskStatsBuf);
+
+    TargetPort::GetRunTimeStats(taskStatsBuf, sizeof(taskStatsBuf));
+    printf("TASK STATS INFO****************************************\r\n");
+    printf("Name            Abs Time (us)  %% Time\r\n");
+    printf("%s\r\n", taskStatsBuf);
 }
 
 //------------------------------------------------------------------

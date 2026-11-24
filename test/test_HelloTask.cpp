@@ -167,6 +167,30 @@ void test_EveryTenthHello_PrintsHighWaterMark(void)
     TEST_ASSERT_EQUAL(0, numbers.back() % 10);
 }
 
+/// @brief Every 10th hello is followed by the task list and run-time stats tables, before the high water mark
+void test_EveryTenthHello_PrintsTaskStats(void)
+{
+    RunHello(1);    // INITIALIZE
+    const std::string printed = RunHello(10);   // the hello counter carries over from earlier tests
+
+    TEST_ASSERT_EQUAL(1, StdoutCapture::Count(printed, "TASK INFO"));
+    TEST_ASSERT_EQUAL(1, StdoutCapture::Count(printed, "fake task list"));
+    TEST_ASSERT_EQUAL(1, StdoutCapture::Count(printed, "TASK STATS INFO"));
+    TEST_ASSERT_EQUAL(1, StdoutCapture::Count(printed, "fake run time stats"));
+
+    // Order: task list, run-time stats, high water mark
+    const size_t list = printed.find("fake task list");
+    const size_t stats = printed.find("fake run time stats");
+    const size_t mark = printed.find("Printf buffer high water mark");
+    TEST_ASSERT_TRUE(list < stats);
+    TEST_ASSERT_TRUE(stats < mark);
+
+    // They come straight after a hello whose number is a multiple of 10
+    const std::vector<long> numbers = HelloNumbers(printed.substr(0, printed.find("TASK INFO")));
+    TEST_ASSERT_FALSE(numbers.empty());
+    TEST_ASSERT_EQUAL(0, numbers.back() % 10);
+}
+
 /// @brief TaskCheckin (the callback the monitor calls) posts TASK_CHECKIN to the task's own queue
 void test_TaskCheckin_PostsToOwnQueue(void)
 {
@@ -230,6 +254,7 @@ int main(void)
     RUN_TEST(test_HandleInitialize_RegistersWithMonitor);
     RUN_TEST(test_SaysHelloEverySecond);
     RUN_TEST(test_EveryTenthHello_PrintsHighWaterMark);
+    RUN_TEST(test_EveryTenthHello_PrintsTaskStats);
     RUN_TEST(test_TaskCheckin_PostsToOwnQueue);
     RUN_TEST(test_CheckinRequest_ChecksInWithMonitor);
     RUN_TEST(test_UnknownMessage_Reported);
